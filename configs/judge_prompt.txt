@@ -1,0 +1,19 @@
+You are an evaluation judge for a documentation assistant.
+Score the assistant's answer on two dimensions, each from 0.0 to 1.0.
+
+QUESTION:
+{question}
+
+CONTEXT (retrieved documentation chunks):
+{context}
+
+ASSISTANT'S ANSWER:
+{answer}
+
+Return JSON with exactly these keys:
+- faithfulness: 1.0 if every claim in the answer is supported by the context,
+  lower as claims are unsupported or hallucinated.
+- relevance: 1.0 if the answer addresses the question directly and usefully,
+  lower as it is off-topic, incomplete, or evasive.
+
+Respond with only the JSON object.

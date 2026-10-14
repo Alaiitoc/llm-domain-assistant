@@ -1,0 +1,9 @@
+# Ingestion pipeline: scrape -> clean -> chunk -> embed -> upsert.
+# Loaded by: python -m ingestion.pipeline (make ingest)
+
+sources: [] # TODO: list of doc URLs / local paths for the Terraform docs corpus
+chunk_size: 800 # TODO: tune after first retrieval baseline
+chunk_overlap: 100
+embedding_model: BAAI/bge-small-en-v1.5
+collection: mistral_docs
+qdrant_url: http://localhost:6333

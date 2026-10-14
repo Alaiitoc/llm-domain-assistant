@@ -1,0 +1,23 @@
+# QLoRA fine-tuning config.
+# Loaded by: python -m finetune.train (make train)
+
+base_model: mistralai/Mistral-7B-Instruct-v0.3
+method: qlora # 4-bit NF4 base + LoRA
+
+lora:
+  r: 16
+  alpha: 16
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+dataset:
+  path: data/train.jsonl # TODO: synthetic Q/A pairs from the corpus, dedup + filtered vs golden set
+  max_seq_length: 2048
+
+# TODO: fill after first training run
+learning_rate: null
+num_train_epochs: null
+per_device_batch_size: null
+gradient_accumulation_steps: null
+
+output_dir: adapters/mistral7b-instruct-qlora-v1

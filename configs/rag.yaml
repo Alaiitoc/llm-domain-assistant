@@ -1,0 +1,11 @@
+# RAG serving config: retriever + generator.
+# Loaded by: rag.retriever / rag.generator / api.main (make ask, make serve)
+
+collection: mistral_docs
+top_k: 5
+reranker: null # TODO: decide whether a reranker earns its latency
+
+llm:
+  # Local inference via Ollama by default; swap for the adapter endpoint after fine-tuning.
+  base_url: http://localhost:11434/v1
+  model: mistral:7b-instruct-v0.3-q4_K_M

@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "terraform-domain-assistant"
+version = "0.1.0"
+description = "QLoRA fine-tuned Mistral-7B + RAG over Terraform docs, with a CI-gated eval harness"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.12",
+    "fastapi>=0.115",
+    "fastembed>=0.4",
+    "httpx>=0.27",
+    "pydantic>=2.8",
+    "PyYAML>=6.0",
+    "qdrant-client>=1.11",
+    "uvicorn[standard]>=0.30",
+]
+
+[project.optional-dependencies]
+# QLoRA training stack. Unsloth is intentionally not pinned here: install it
+# per https://docs.unsloth.ai (wheel index or git) on the training machine.
+finetune = [
+    "accelerate>=0.34",
+    "bitsandbytes>=0.44",
+    "datasets>=2.20",
+    "peft>=0.12",
+    "torch>=2.4",
+    "transformers>=4.44",
+    "trl>=0.11",
+]
+dev = [
+    "pre-commit>=4.6",
+    "pytest>=8.3",
+    "ruff>=0.16",
+    "mypy>=2.4",
+    "types-PyYAML>=6.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # bugbear
+    "SIM", # simplify
+    "RUF", # ruff-specific
+]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src"]
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

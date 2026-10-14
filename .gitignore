@@ -1,0 +1,22 @@
+# git: Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Environments and tooling caches
+.venv/
+venv/
+.env
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Model artifacts (never commit checkpoints or raw corpora)
+adapters/
+models/
+data/raw/
+data/chunks/

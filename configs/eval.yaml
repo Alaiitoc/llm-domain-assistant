@@ -1,0 +1,16 @@
+# Eval harness config: golden set, judge, and CI regression gates.
+# Loaded by: python -m eval.run_eval (make eval)
+
+golden_set: data/golden.jsonl # 50 held-out Q/A pairs, written before any training
+
+judge:
+  model: null # TODO: pick judge model (must be fixed + versioned for comparable scores)
+  prompt: configs/judge_prompt.txt
+
+# CI regression gate: a run with any metric below its gate fails (--gate mode).
+# TODO: set real thresholds from the first measured baseline, not guesses.
+gates:
+  recall_at_k: 0.60
+  mrr: 0.50
+  faithfulness: 0.70
+  relevance: 0.70

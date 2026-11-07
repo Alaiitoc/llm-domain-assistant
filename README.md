@@ -12,7 +12,7 @@ Most RAG demos stop at "it answers". I wanted the three things that make an LLM 
 2. **A fine-tune that's actually justified** — QLoRA on an open-weight model, tested against that baseline
 3. **Regression gates** — an eval harness that runs in CI, so no change ships blind
 
-I'm a data engineer moving deeper into applied AI; this project is the model-side complement to my day job building agentic tooling (GitHub Copilot marketplace, MCP server, RAG-style knowledge base adopted by 15–20 engineers).
+Most of my other projects live on the data and tooling side of the stack; this one is my way of getting hands-on with the model side.
 
 ## Architecture
 

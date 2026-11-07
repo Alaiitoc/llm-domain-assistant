@@ -2,6 +2,9 @@
 # Loaded by: rag.retriever / rag.generator / api.main (make ask, make serve)
 
 collection: mistral_docs
+# MUST match configs/ingestion.yaml — query vectors are only comparable to
+# document vectors from the same embedding model (mistral-embed, 1024 dims).
+embedding_model: mistral-embed
 top_k: 5
 reranker: null # TODO: decide whether a reranker earns its latency
 

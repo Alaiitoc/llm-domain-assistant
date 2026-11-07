@@ -117,6 +117,32 @@ class TestStripMdxComponents:
         assert "<VideoEmbed" not in doc.text
         assert "<ProviderTable" not in doc.text
 
+    def test_code_block_config_filename_kept_as_marker(self, tmp_path: pathlib.Path) -> None:
+        path = tmp_path / "cbf.mdx"
+        path.write_text(
+            "---\ntitle: T\n---\n\n"
+            '<CodeBlockConfig filename="my_buckets.tf">\n\n```hcl\nmodule "bucket" {\n}\n```\n\n'
+            "</CodeBlockConfig>\n",
+            encoding="utf-8",
+        )
+        doc = clean(str(path))
+        assert "**File: my_buckets.tf**" in doc.text
+        assert 'module "bucket"' in doc.text
+        assert "<CodeBlockConfig" not in doc.text
+        assert "</CodeBlockConfig>" not in doc.text
+
+    def test_code_block_config_without_filename_dropped(self, tmp_path: pathlib.Path) -> None:
+        path = tmp_path / "cbn.mdx"
+        path.write_text(
+            "---\ntitle: T\n---\n\n"
+            '<CodeBlockConfig highlight="6, 18">\n\n```hcl\nx = 1\n```\n\n</CodeBlockConfig>\n',
+            encoding="utf-8",
+        )
+        doc = clean(str(path))
+        assert "x = 1" in doc.text
+        assert "<CodeBlockConfig" not in doc.text
+        assert "File:" not in doc.text
+
 
 class TestCleanValidation:
     def test_rejects_non_mdx_path(self) -> None:

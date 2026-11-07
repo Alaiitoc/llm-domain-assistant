@@ -55,7 +55,8 @@ class TestCleanCorpus:
         assert doc.metadata["description"].startswith("Key constructs of the native")
 
     _COMPONENT_TAG = re.compile(
-        r"</?(?:Tabs?|Note|Warning|Tip|EnterpriseAlert|Highlight|VideoEmbed|ProviderTable)\b"
+        r"</?(?:Tabs?|Note|Warning|Tip|EnterpriseAlert|Highlight|VideoEmbed|"
+        r"ProviderTable|CodeBlockConfig)\b"
     )
 
     def test_no_mdx_components_remain(self, mdx_files: list[pathlib.Path]) -> None:

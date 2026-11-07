@@ -30,6 +30,10 @@ _TAB_MISC = re.compile(r"</?Tabs?\s*>")
 _CALLOUT_OPEN = re.compile(r"<(?P<kind>Note|Warning|Tip|EnterpriseAlert)\b[^>]*>")
 _CALLOUT_CLOSE = re.compile(r"</(?:Note|Warning|Tip|EnterpriseAlert)>")
 _HIGHLIGHT = re.compile(r"</?Highlight[^>]*>")
+# CodeBlockConfig wraps fences with rendering config; the filename attribute is
+# the only meaningful bit (it names the file the example lives in).
+_CODEBLOCK_OPEN = re.compile(r'<CodeBlockConfig\s+filename="(?P<filename>[^"]*)"\s*/?>')
+_CODEBLOCK_MISC = re.compile(r"<CodeBlockConfig\b[^>]*/?>|</CodeBlockConfig>")
 # Self-contained components with no readable content.
 _DROP = re.compile(r"<(?:VideoEmbed|ProviderTable)\b[^>]*/>|<p>\s*</p>")
 
@@ -41,6 +45,8 @@ def strip_mdx_components(text: str) -> str:
     text = _CALLOUT_OPEN.sub(lambda m: f"\n**{m.group('kind')}:**\n", text)
     text = _CALLOUT_CLOSE.sub("\n", text)
     text = _HIGHLIGHT.sub("", text)
+    text = _CODEBLOCK_OPEN.sub(lambda m: f"\n**File: {m.group('filename')}**\n", text)
+    text = _CODEBLOCK_MISC.sub("", text)
     text = _DROP.sub("", text)
     return text
 

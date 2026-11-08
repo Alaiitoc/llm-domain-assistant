@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from uuid import UUID
 
-import pytest
-
 from ingestion.chunk import (
     apply_overlap,
     chunk,
@@ -53,17 +51,12 @@ class TestPackBlocks:
         chunks = pack_blocks(["x" * 500, "y" * 500], max_size=800)
         assert chunks == ["x" * 500, "y" * 500]
 
-    def test_oversized_fence_gets_own_chunk(self) -> None:
+    def test_oversized_fence_and_prose_get_own_chunks(self) -> None:
         fence = "```hcl\n" + "x = 1\n" * 200 + "```"
-        prose = "short para"
-        chunks = pack_blocks([prose, fence, prose], max_size=800)
-        assert chunks[0] == prose
-        assert chunks[1] == fence  # intact, unsliced
-        assert chunks[2] == prose
-
-    def test_oversized_prose_raises(self) -> None:
-        with pytest.raises(ValueError, match="prose block"):
-            pack_blocks(["word " * 400], max_size=800)
+        table = "| Flag | Description |\n" + "| :--- | :--- |\n" + "| short | text |\n" * 80
+        chunks = pack_blocks([fence, table], max_size=800)
+        # intact and unsliced; pack_blocks strips chunk edges
+        assert chunks == [fence, table.rstrip()]
 
     def test_heading_packs_forward_never_orphaned(self) -> None:
         heading = "## Meta-arguments"

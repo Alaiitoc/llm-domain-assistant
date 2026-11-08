@@ -67,19 +67,17 @@ def split_blocks(text: str) -> list[str]:
 
 
 def pack_blocks(blocks: list[str], max_size: int) -> list[str]:
-    """Greedily pack blocks into chunks, never slicing a fence.
+    """Greedily pack blocks into chunks, never slicing a fence or a big block.
 
-    A fence longer than max_size gets its own oversized chunk; a prose block
-    larger than max_size raises, because at that size clean() upstream broke,
-    not the chunker. Headings pack forward (never end a chunk alone).
+    Any block (fence, table, long bullet list) longer than max_size gets its
+    own oversized chunk, kept whole - corpus reality includes 800+ char
+    tables and indented code that must not be sliced. Headings pack forward
+    (never end a chunk alone).
     """
     chunks: list[list[str]] = []
     current: list[str] = []
     for block in blocks:
-        is_fence = block.startswith("```")
-        if not is_fence and len(block) > max_size:
-            raise ValueError(f"prose block of {len(block)} chars exceeds max_size={max_size}")
-        if is_fence and len(block) > max_size:
+        if len(block) > max_size:
             if current:
                 chunks.append(current)
                 current = []

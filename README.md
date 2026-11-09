@@ -2,7 +2,7 @@
 
 > **Does fine-tuning actually beat RAG?** A measured answer: QLoRA fine-tuned Mistral-7B + retrieval over Terraform docs, gated by a CI eval harness.
 
-[![CI](https://github.com/Alaiitoc/llm-domain-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Alaiitoc/llm-domain-assistant/actions/workflows/ci.yml) ![License](https://img.shields.io/badge/license-MIT-blue.svg) [Adapter on Hugging Face](TBD-hf-url)
+[![CI](https://github.com/Alaiitoc/llm-domain-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Alaiitoc/llm-domain-assistant/actions/workflows/ci.yml) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## Why
 
@@ -130,6 +130,6 @@ src/
 
 ## Links
 
-- LoRA adapter: [Hugging Face](TBD-hf-url)
-- Eval scorecard artifact: [CI run](TBD-url)
-- My notes on the process: [TBD blog post / discussion]
+- LoRA adapter on Hugging Face — *planned, Phase 3* (published when training is done; the link goes here the day it exists)
+- Eval scorecard artifact — *planned, Phase 2* (uploaded by the CI `eval-gate` job once the golden set lands)
+- Process notes / write-up — *planned, Phase 4*

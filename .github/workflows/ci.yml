@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # develop is the working branch; badge + gates cover it.
+    # Keep `main` for the merged trunk; prune `develop` once PR flow takes over.
+    branches: [main, develop]
   pull_request:
 
 jobs:

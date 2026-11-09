@@ -22,10 +22,16 @@ CORPUS_DIR = REPO_ROOT / "data/raw/terraform-docs-repo/content/terraform/v1.16.x
 
 
 @pytest.fixture(scope="module")
-def mdx_files() -> list[pathlib.Path]:
+def corpus() -> pathlib.Path:
+    """Skip with a clear reason wherever the gitignored corpus is absent (CI)."""
     if not CORPUS_DIR.is_dir():
         pytest.skip(f"docs corpus not present: {CORPUS_DIR}")
-    return sorted(CORPUS_DIR.rglob("*.mdx"))
+    return CORPUS_DIR
+
+
+@pytest.fixture(scope="module")
+def mdx_files(corpus: pathlib.Path) -> list[pathlib.Path]:
+    return sorted(corpus.rglob("*.mdx"))
 
 
 class TestCleanCorpus:
@@ -49,8 +55,8 @@ class TestCleanCorpus:
         assert "page_title:" not in doc.text
         assert "# Configuration Syntax" in doc.text
 
-    def test_folded_scalar_description_is_stringified(self) -> None:
-        path = CORPUS_DIR / "language/syntax/configuration.mdx"
+    def test_folded_scalar_description_is_stringified(self, corpus: pathlib.Path) -> None:
+        path = corpus / "language/syntax/configuration.mdx"
         doc = clean(str(path))
         assert doc.metadata["description"].startswith("Key constructs of the native")
 

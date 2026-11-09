@@ -3,7 +3,7 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "terraform-domain-assistant"
+name = "llm-domain-assistant"
 version = "0.1.0"
 description = "QLoRA fine-tuned Mistral-7B + RAG over Terraform docs, with a CI-gated eval harness"
 readme = "README.md"

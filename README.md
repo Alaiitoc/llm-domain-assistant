@@ -1,8 +1,8 @@
-# terraform-domain-assistant
+# llm-domain-assistant
 
 > **Does fine-tuning actually beat RAG?** A measured answer: QLoRA fine-tuned Mistral-7B + retrieval over Terraform docs, gated by a CI eval harness.
 
-[![CI](https://github.com/Alaiitoc/terraform-domain-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Alaiitoc/terraform-domain-assistant/actions/workflows/ci.yml) ![License](https://img.shields.io/badge/license-MIT-blue.svg) [Adapter on Hugging Face](TBD-hf-url)
+[![CI](https://github.com/Alaiitoc/llm-domain-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Alaiitoc/llm-domain-assistant/actions/workflows/ci.yml) ![License](https://img.shields.io/badge/license-MIT-blue.svg) [Adapter on Hugging Face](TBD-hf-url)
 
 ## Why
 
@@ -66,8 +66,8 @@ CPU-only inference is a deliberate constraint, not an accident: this laptop has 
 ## Quickstart
 
 ```bash
-git clone https://github.com/Alaiitoc/terraform-domain-assistant
-cd terraform-domain-assistant
+git clone https://github.com/Alaiitoc/llm-domain-assistant
+cd llm-domain-assistant
 docker compose up -d          # Qdrant + API
 make ingest                   # build the vector index
 make ask QUESTION="What is the difference between count and for_each in Terraform?"   # ask something

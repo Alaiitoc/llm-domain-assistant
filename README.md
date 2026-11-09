@@ -88,7 +88,7 @@ Requires: Python 3.11+, Docker (Qdrant), a Mistral API key for embeddings (`MIST
 | Training time | TBD |
 | LoRA target modules | q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj |
 | LR / epochs / batch | TBD |
-| Adapter size | TBD MB — [published on Hugging Face](TBD-hf-url) |
+| Adapter size | TBD MB — published on Hugging Face in Phase 3 |
 
 Reproduce: `make train` then `make eval` — training script at `src/finetune/train.py`, config in `configs/`.
 

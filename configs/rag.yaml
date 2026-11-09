@@ -1,7 +1,8 @@
 # RAG serving config: retriever + generator.
 # Loaded by: rag.retriever / rag.generator / api.main (make ask, make serve)
 
-collection: mistral_docs
+collection: terraform_docs
+qdrant_url: http://localhost:6333
 # MUST match configs/ingestion.yaml — query vectors are only comparable to
 # document vectors from the same embedding model (mistral-embed, 1024 dims).
 embedding_model: mistral-embed
@@ -12,3 +13,7 @@ llm:
   # Local inference via Ollama by default; swap for the adapter endpoint after fine-tuning.
   base_url: http://localhost:11434/v1
   model: mistral:7b-instruct-v0.3-q4_K_M
+  # CPU measure on this machine: ~0.7 tokens/s. A grounded answer takes ~5-12 min;
+  # timeout covers prompt + answer, max_tokens bounds the answer itself.
+  timeout: 900
+  max_tokens: 512

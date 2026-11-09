@@ -80,11 +80,13 @@ Reproduce: `make train` then `make eval` — training script at `src/finetune/tr
 
 ```
 src/
-├── ingestion/    # scrape → clean → chunk → embed
-├── rag/          # retriever + prompt + generator
-├── finetune/     # dataset builder + QLoRA training
-├── eval/         # golden set, metrics, judge, scorecard
-└── api/          # FastAPI endpoint (/ask → answer + sources)
+├── clients.py       # connection factories: Mistral, Qdrant (secrets/env only here)
+├── qdrant_store.py  # point payload schema + collection lifecycle (round-trip tested)
+├── ingestion/       # clean → chunk → embed → upsert
+├── rag/             # retriever + prompt + generator
+├── finetune/        # dataset builder + QLoRA training
+├── eval/            # golden set, metrics, judge, scorecard
+└── api/             # FastAPI endpoint (/ask → answer + sources)
 ```
 
 ## Status

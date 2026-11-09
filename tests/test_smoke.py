@@ -7,6 +7,8 @@ import importlib
 import pytest
 
 MODULES = [
+    "clients",
+    "qdrant_store",
     "ingestion.chunk",
     "ingestion.clean",
     "ingestion.embed",

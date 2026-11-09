@@ -1,33 +1,22 @@
 """Embed chunks with mistral-embed and upsert them into Qdrant.
 
-Order of operations is deliberate: embedding happens BEFORE any collection
-recreation, so a failed API call never destroys the existing index. Payloads
-are flat str-only maps (a Qdrant constraint) and carry the embedding model
-name, because an API-backed model can be updated silently and every point
-should record what produced its vector.
+Connections come from clients.py, the payload schema from qdrant_store.py;
+this module keeps the embedding semantics: batching, retry, the
+embed-then-recreate ordering (a failed API call must never destroy the
+existing index), and the ingestion entry point.
 """
 
 from __future__ import annotations
 
-import os
 import time
 
 from mistralai.client import Mistral
 from mistralai.client.errors.sdkerror import SDKError
-from qdrant_client import QdrantClient, models
+from qdrant_client import models
 
+from clients import mistral_client, qdrant_client
 from ingestion.chunk import Chunk
-
-
-def mistral_client() -> Mistral:
-    """Build the Mistral client; the key lives in the env, never in config."""
-    api_key = os.environ.get("MISTRAL_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "MISTRAL_API_KEY is not set. Put it in the environment"
-            " (e.g. source .env); config files never hold secrets."
-        )
-    return Mistral(api_key=api_key)
+from qdrant_store import ensure_collection, to_payload
 
 
 def _is_rate_limited(err: Exception) -> bool:
@@ -44,7 +33,8 @@ def embed_texts(
 ) -> list[list[float]]:
     """Embed ``texts`` in batches, retrying rate limits with backoff.
 
-    ``client`` is injected so tests can pass a stub; no network here.
+    ``client`` is injected (a Mistral client from clients.py) so tests can
+    pass a stub; no network here.
     """
     vectors: list[list[float]] = []
     for start in range(0, len(texts), batch_size):
@@ -71,40 +61,13 @@ def build_points(
     vectors: list[list[float]],
     embedding_model: str,
 ) -> list[models.PointStruct]:
-    """Zip chunks and vectors into Qdrant points with provenance payloads."""
+    """Zip chunks and vectors into Qdrant points via the store payload schema."""
     if len(chunks) != len(vectors):
         raise ValueError(f"chunks/vectors mismatch: {len(chunks)} != {len(vectors)}")
     return [
-        models.PointStruct(
-            id=chunk.id,
-            vector=vector,
-            payload={
-                **chunk.metadata,
-                "text": chunk.text,
-                "source_url": chunk.source_url,
-                "embedding_model": embedding_model,
-            },
-        )
+        models.PointStruct(id=chunk.id, vector=vector, payload=to_payload(chunk, embedding_model))
         for chunk, vector in zip(chunks, vectors, strict=True)
     ]
-
-
-def ensure_collection(
-    qdrant: QdrantClient,
-    collection: str,
-    dim: int,
-    recreate: bool = True,
-) -> None:
-    """Recreate (default) or create the collection; carries the idempotency decision."""
-    exists = qdrant.collection_exists(collection)
-    if recreate and exists:
-        qdrant.delete_collection(collection)
-        exists = False
-    if not exists:
-        qdrant.create_collection(
-            collection_name=collection,
-            vectors_config=models.VectorParams(size=dim, distance=models.Distance.COSINE),
-        )
 
 
 def embed_and_upsert(
@@ -123,7 +86,7 @@ def embed_and_upsert(
     vectors = embed_texts([c.text for c in chunks], mistral_client(), embedding_model, batch_size)
     points = build_points(chunks, vectors, embedding_model)
 
-    qdrant = QdrantClient(url=qdrant_url)
+    qdrant = qdrant_client(qdrant_url)
     ensure_collection(qdrant, collection, embedding_dim, recreate_collection)
     upsert_batch = 256
     for start in range(0, len(points), upsert_batch):

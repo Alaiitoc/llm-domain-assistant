@@ -32,7 +32,7 @@ class IngestionConfig(BaseModel):
     chunk_overlap: int = 100
     embedding_model: str = "mistral-embed"
     embedding_dim: int = 1024
-    collection: str = "mistral_docs"
+    collection: str = "terraform_docs"
     qdrant_url: str = "http://localhost:6333"
 
 
@@ -129,10 +129,7 @@ def main(argv: list[str] | None = None) -> int:
         embedding_model=config.embedding_model,
         embedding_dim=config.embedding_dim,
     )
-    print(
-        f"upserted {written} points into '{config.collection}' "
-        f"in {time.time() - started:.1f}s"
-    )
+    print(f"upserted {written} points into '{config.collection}' in {time.time() - started:.1f}s")
     return 0
 
 

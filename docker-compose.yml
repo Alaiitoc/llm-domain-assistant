@@ -2,6 +2,7 @@ services:
   qdrant:
     # Vector database: stores embeddings + metadata, answers similarity search.
     image: qdrant/qdrant:latest # TODO: pin a version once the index schema settles
+    restart: unless-stopped # survive reboots (docker daemon starts it); not `always` so `down` is yours to relent on
     ports:
       - "6333:6333" # REST API + web dashboard at http://localhost:6333/dashboard
       - "6334:6334" # gRPC interface

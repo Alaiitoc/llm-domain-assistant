@@ -103,10 +103,3 @@ class TestBuildPoints:
     def test_mismatched_lengths_raise(self) -> None:
         with pytest.raises(ValueError, match="mismatch"):
             build_points([_chunk()], [], "mistral-embed")
-
-
-class TestMistralClient:
-    def test_missing_api_key_is_a_clear_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
-        with pytest.raises(RuntimeError, match="MISTRAL_API_KEY"):
-            embed.mistral_client()

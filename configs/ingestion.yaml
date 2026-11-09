@@ -14,5 +14,5 @@ chunk_overlap: 100
 # (e.g. bge-small = 384) would have to be fully re-embedded.
 embedding_model: mistral-embed
 embedding_dim: 1024
-collection: mistral_docs
+collection: terraform_docs
 qdrant_url: http://localhost:6333

@@ -1,20 +1,26 @@
 services:
   qdrant:
+    # Vector database: stores embeddings + metadata, answers similarity search.
     image: qdrant/qdrant:latest # TODO: pin a version once the index schema settles
+    restart: unless-stopped # survive reboots (docker daemon starts it); not `always` so `down` is yours to relent on
     ports:
-      - "6333:6333"
-      - "6334:6334"
+      - "6333:6333" # REST API + web dashboard at http://localhost:6333/dashboard
+      - "6334:6334" # gRPC interface
     volumes:
+      # Named volume -> index data survives `docker compose down` (but not `-v`)
       - qdrant_storage:/qdrant/storage
 
   api:
+    # Built from the Dockerfile in this repo (the Python API service).
     build: .
     ports:
-      - "8000:8000"
+      - "8000:8000" # host:container port mapping
     environment:
+      # Containers on the same compose network resolve each other by name.
+      # From *outside* docker you'd use http://localhost:6333 instead.
       QDRANT_URL: http://qdrant:6333
     depends_on:
-      - qdrant
+      - qdrant # start qdrant first (note: only ordering, not "wait until ready")
 
 volumes:
   qdrant_storage:

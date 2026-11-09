@@ -1,9 +1,18 @@
 # Ingestion pipeline: scrape -> clean -> chunk -> embed -> upsert.
 # Loaded by: python -m ingestion.pipeline (make ingest)
 
-sources: [] # TODO: list of doc URLs / local paths for the Terraform docs corpus
+sources:
+  # Official Terraform docs source (same MDX that renders developer.hashicorp.com),
+  # sparse-cloned from hashicorp/web-unified-docs. Pinned to one version so the
+  # corpus is reproducible; re-run with a newer vX.Y.x dir to bump.
+  - data/raw/terraform-docs-repo/content/terraform/v1.16.x/docs
 chunk_size: 800 # TODO: tune after first retrieval baseline
 chunk_overlap: 100
-embedding_model: BAAI/bge-small-en-v1.5
-collection: mistral_docs
+# Embeddings via the Mistral API (needs MISTRAL_API_KEY in the environment).
+# mistral-embed has a FIXED output dimension of 1024 — the Qdrant collection
+# must be created with this size, and any corpus embedded with another model
+# (e.g. bge-small = 384) would have to be fully re-embedded.
+embedding_model: mistral-embed
+embedding_dim: 1024
+collection: terraform_docs
 qdrant_url: http://localhost:6333

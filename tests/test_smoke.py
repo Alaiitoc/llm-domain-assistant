@@ -7,11 +7,12 @@ import importlib
 import pytest
 
 MODULES = [
+    "clients",
+    "qdrant_store",
     "ingestion.chunk",
     "ingestion.clean",
     "ingestion.embed",
     "ingestion.pipeline",
-    "ingestion.scrape",
     "rag.cli",
     "rag.generator",
     "rag.prompts",

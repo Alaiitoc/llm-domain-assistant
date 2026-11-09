@@ -1,5 +1,9 @@
 .PHONY: install hooks up down ingest ask eval train serve test lint fmt typecheck
 
+-include .env
+export
+
+PYTHON ?= python3
 QUESTION ?= "What is the Spark API?"
 
 install:            ## Install editable with dev tooling
@@ -16,16 +20,16 @@ down:               ## Stop Qdrant + API
 	docker compose down
 
 ingest:             ## Build the vector index from docs
-	python -m ingestion.pipeline --config configs/ingestion.yaml
+	$(PYTHON) -m ingestion.pipeline --config configs/ingestion.yaml
 
 ask:                ## Ask a question: make ask QUESTION="..."
-	python -m rag.cli ask --question "$(QUESTION)"
+	$(PYTHON) -m rag.cli ask --question "$(QUESTION)"
 
 eval:               ## Run the eval harness, print scorecard
-	python -m eval.run_eval --config configs/eval.yaml
+	$(PYTHON) -m eval.run_eval --config configs/eval.yaml
 
 train:              ## QLoRA fine-tune (requires finetune extra + Unsloth)
-	python -m finetune.train --config configs/finetune.yaml
+	$(PYTHON) -m finetune.train --config configs/finetune.yaml
 
 serve:              ## Run the API locally with reload
 	uvicorn api.main:app --reload

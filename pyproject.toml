@@ -3,17 +3,17 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "terraform-domain-assistant"
+name = "llm-domain-assistant"
 version = "0.1.0"
 description = "QLoRA fine-tuned Mistral-7B + RAG over Terraform docs, with a CI-gated eval harness"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
-    "beautifulsoup4>=4.12",
     "fastapi>=0.115",
-    "fastembed>=0.4",
     "httpx>=0.27",
+    "mistralai>=3.7",
     "pydantic>=2.8",
+    "python-frontmatter>=1.1",
     "PyYAML>=6.0",
     "qdrant-client>=1.11",
     "uvicorn[standard]>=0.30",
@@ -63,7 +63,7 @@ select = [
 quote-style = "double"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 files = ["src"]
 strict = true
 ignore_missing_imports = true
@@ -71,3 +71,6 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+    "integration: tests that need the gitignored docs corpus under data/raw/",
+]

@@ -74,7 +74,7 @@ make ask QUESTION="What is the difference between count and for_each in Terrafor
 make eval                      # run the eval harness, print scorecard
 ```
 
-Requires: Python 3.11+, Docker (Qdrant), a Mistral API key for embeddings (`MISTRAL_API_KEY`, embeddings cost ~$0.02 for the full corpus), and [Ollama](https://ollama.com) with `mistral:7b-instruct-v0.3-q4_K_M` for local generation (CPU works: ~1 min/answer).
+Requires: Python 3.12+, Docker (Qdrant), a Mistral API key for embeddings (`MISTRAL_API_KEY`, embeddings cost ~$0.02 for the full corpus), and [Ollama](https://ollama.com) with `mistral:7b-instruct-v0.3-q4_K_M` for local generation (CPU works: ~1 min/answer).
 
 ## Fine-tuning
 

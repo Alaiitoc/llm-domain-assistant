@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    # develop is the working branch; badge + gates cover it.
-    # Keep `main` for the merged trunk; prune `develop` once PR flow takes over.
-    branches: [main, develop]
+    # Trunk only: feature work flows through PRs, which fire the pull_request
+    # trigger below — a push trigger on develop would just duplicate runs.
+    branches: [main]
   pull_request:
 
 jobs:

@@ -40,6 +40,12 @@ class RagConfig(BaseModel):
     llm: LLMConfig
 
 
+# Shared by both entry points (cli + api): a bound on the question protects the
+# embedding-API bill and the context window from oversized input. A real
+# Terraform question is a few hundred characters at most.
+QUESTION_MAX_CHARS = 2_000
+
+
 def load_rag_config(path: str) -> RagConfig:
     """Load and validate the RAG yaml; wrong keys fail fast, loudly, named."""
     with open(path, encoding="utf-8") as f:

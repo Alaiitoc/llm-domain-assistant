@@ -1,15 +1,22 @@
 """CLI for ``make ask``: retrieve chunks and generate a cited answer.
 
 This is the config boundary: yaml is loaded HERE and passed downward, so
-``retrieve`` and ``generate`` stay pure functions of their arguments.
+``retrieve`` and ``generate`` stay pure functions of their arguments. It is
+also the error boundary: expected operational failures (Ollama down, key
+missing, embedding API erroring) print one line and exit 1; anything else is
+a bug and keeps its traceback.
 """
 
 from __future__ import annotations
 
 import argparse
+import sys
 import time
 
-from rag.config import RagConfig, load_rag_config
+import httpx
+from mistralai.client.errors.sdkerror import SDKError
+
+from rag.config import QUESTION_MAX_CHARS, RagConfig, load_rag_config
 from rag.generator import Answer, generate
 from rag.retriever import Hit, retrieve
 
@@ -35,13 +42,34 @@ def _print_hits(hits: list[Hit]) -> None:
 
 def ask(question: str, cfg: RagConfig, top_k: int | None = None) -> int:
     """Retrieve, then generate; returns the exit code."""
-    started = time.perf_counter()
-    hits = retrieve(question, cfg, top_k=top_k)
-    retrieved_at = time.perf_counter()
-    _print_hits(hits)
+    if len(question) > QUESTION_MAX_CHARS:
+        print(
+            f"question too long: {len(question)} chars (max {QUESTION_MAX_CHARS})",
+            file=sys.stderr,
+        )
+        return 1
 
-    answer: Answer = generate(question, [hit.chunk for hit in hits], cfg.llm)
-    finished = time.perf_counter()
+    try:
+        started = time.perf_counter()
+        hits = retrieve(question, cfg, top_k=top_k)
+        retrieved_at = time.perf_counter()
+        _print_hits(hits)
+
+        answer: Answer = generate(question, [hit.chunk for hit in hits], cfg.llm)
+        finished = time.perf_counter()
+    except httpx.HTTPError as exc:
+        print(
+            f"generation failed: {exc} — is Ollama up on {cfg.llm.base_url}?",
+            file=sys.stderr,
+        )
+        return 1
+    except SDKError as exc:
+        print(f"embedding API error: {exc}", file=sys.stderr)
+        return 1
+    except RuntimeError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
     print(f"\n{answer.text}\n")
     for source in answer.sources:
         print(f"source: {source}")

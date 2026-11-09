@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import httpx
 import pytest
 
 import rag.cli as cli
 from ingestion.chunk import Chunk
-from rag.config import LLMConfig, RagConfig
+from rag.config import QUESTION_MAX_CHARS, LLMConfig, RagConfig
 from rag.generator import Answer
 from rag.retriever import Hit
 
@@ -52,3 +53,42 @@ class TestFmtDuration:
 
     def test_minutes_above_a_minute(self) -> None:
         assert cli._fmt_duration(723) == "12m 03s"
+
+
+class TestCliBoundary:
+    def test_overlong_question_is_rejected(self, capsys: pytest.CaptureFixture[str]) -> None:
+        code = cli.ask("q" * (QUESTION_MAX_CHARS + 1), CFG)
+        captured = capsys.readouterr()
+        assert code == 1
+        assert "question too long" in captured.err
+
+    def test_generation_failure_is_one_line_not_a_traceback(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        monkeypatch.setattr(cli, "retrieve", lambda question, cfg, top_k=None: [_hit(1)])
+        monkeypatch.setattr(
+            cli,
+            "generate",
+            lambda question, chunks, llm: (_ for _ in ()).throw(httpx.ReadTimeout("timed out")),
+        )
+        code = cli.ask("q?", CFG)
+        captured = capsys.readouterr()
+        assert code == 1
+        assert "generation failed" in captured.err
+        assert "Ollama" in captured.err
+
+    def test_missing_key_runtime_error_is_friendly(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        def boom(question: str, cfg: object, top_k: int | None = None) -> list[Hit]:
+            raise RuntimeError("MISTRAL_API_KEY is not set")
+
+        monkeypatch.setattr(cli, "retrieve", boom)
+        code = cli.ask("q?", CFG)
+        captured = capsys.readouterr()
+        assert code == 1
+        assert "MISTRAL_API_KEY" in captured.err

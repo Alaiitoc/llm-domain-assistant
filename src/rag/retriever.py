@@ -33,9 +33,12 @@ def retrieve(query: str, cfg: RagConfig, top_k: int | None = None) -> list[Hit]:
     """Embed ``query`` and return the top_k most similar chunks, ranked.
 
     ``top_k`` overrides ``cfg.top_k`` per call (eval wants recall@10 without
-    forging a config); ``None`` means config wins.
+    forging a config); ``None`` means config wins. An explicit ``0`` or lower
+    is rejected loudly rather than silently treated as config-wins.
     """
-    limit = top_k or cfg.top_k
+    if top_k is not None and top_k < 1:
+        raise ValueError(f"top_k must be >= 1, got {top_k}")
+    limit = cfg.top_k if top_k is None else top_k
 
     # Same embed path as ingestion: symmetry is the whole comparability story.
     vector = embed_texts([query], mistral_client(), cfg.embedding_model)[0]

@@ -42,21 +42,21 @@ class TestBuildMessages:
 class TestCitedSources:
     def test_cited_numbers_map_to_chunk_urls(self) -> None:
         chunks = [_chunk(1), _chunk(2), _chunk(3)]
-        assert cited_sources("see [2] and also [1].", chunks) == [
-            "https://example.com/1",
-            "https://example.com/2",
-        ]
+        sources, cited = cited_sources("see [2] and also [1].", chunks)
+        assert sources == ["https://example.com/1", "https://example.com/2"]
+        assert cited is True  # at least one in-range marker
 
     def test_duplicates_and_out_of_range_ignored(self) -> None:
         chunks = [_chunk(1), _chunk(2)]
-        assert cited_sources("[1] [1] [9]", chunks) == ["https://example.com/1"]
+        sources, cited = cited_sources("[1] [1] [9]", chunks)
+        assert sources == ["https://example.com/1"]
+        assert cited is True  # [9] ignored, but [1] still counts
 
-    def test_no_citations_falls_back_to_all_sources(self) -> None:
+    def test_no_citations_falls_back_to_all_sources_and_flags_it(self) -> None:
         chunks = [_chunk(1), _chunk(2)]
-        assert cited_sources("no citations here", chunks) == [
-            "https://example.com/1",
-            "https://example.com/2",
-        ]
+        sources, cited = cited_sources("no citations here", chunks)
+        assert sources == ["https://example.com/1", "https://example.com/2"]
+        assert cited is False  # fallback hides a non-citing answer; evals need that
 
 
 class TestGenerate:
@@ -77,6 +77,7 @@ class TestGenerate:
         assert answer.text == "answer citing [1]"
         assert answer.sources == ["https://example.com/1"]
         assert answer.prompt_version  # provenance rides along
+        assert answer.cited is True  # "[1]" in range → compliant
         assert calls[0]["url"] == "http://ollama:11434/v1/chat/completions"
         payload = calls[0]["json"]
         assert isinstance(payload, dict)
@@ -92,4 +93,5 @@ class TestGenerate:
         monkeypatch.setattr(generator_module.httpx, "post", boom)
         answer = generate("question?", [], LLM)
         assert answer.sources == []
+        assert answer.cited is False  # no chunks means no citation contract
         assert "No relevant documentation" in answer.text

@@ -20,10 +20,16 @@ _CITED_NUMBER = re.compile(r"\[(\d+)\]")
 
 
 class Answer(BaseModel):
-    """A grounded answer with the chunk ids it cites and the prompt that made it."""
+    """A grounded answer with the chunk ids it cites and the prompt that made it.
+
+    ``cited`` records citation compliance (at least one valid ``[n]`` in the
+    answer text): the sources fallback silently hides a model that refuses to
+    cite, and evals want that visible.
+    """
 
     text: str
     sources: list[str] = []
+    cited: bool = True
     prompt_version: str = PROMPT_VERSION
 
 
@@ -45,11 +51,12 @@ def build_messages(question: str, chunks: list[Chunk]) -> list[dict[str, str]]:
     ]
 
 
-def cited_sources(answer_text: str, chunks: list[Chunk]) -> list[str]:
-    """Distinct source_urls of the chunks the answer actually cites.
+def cited_sources(answer_text: str, chunks: list[Chunk]) -> tuple[list[str], bool]:
+    """Distinct source_urls of the cited chunks, and citation compliance.
 
-    Citations out of range are ignored; if the model cites nothing, fall back
-    to every retrieved source — an answer with no sources is a UX bug.
+    Citations out of range are ignored; if the model cites nothing, the sources
+    fall back to every retrieved URL (an answer with no sources is a UX bug),
+    reported via ``cited=False`` so evals can measure citation compliance.
     """
     numbers = {int(n) for n in _CITED_NUMBER.findall(answer_text)}
     indices = sorted(n for n in numbers if 1 <= n <= len(chunks))
@@ -58,15 +65,19 @@ def cited_sources(answer_text: str, chunks: list[Chunk]) -> list[str]:
         url = chunks[i - 1].source_url
         if url not in sources:
             sources.append(url)
+    cited = bool(indices)
     if not sources:
         sources = [chunk.source_url for chunk in chunks]
-    return sources
+    return sources, cited
 
 
 def generate(question: str, chunks: list[Chunk], llm: LLMConfig) -> Answer:
     """Fill the answer prompt with ``chunks`` and call the LLM endpoint."""
     if not chunks:
-        return Answer(text="No relevant documentation was retrieved for this question.")
+        # No retrieval means no citation contract to comply with; sources empty.
+        return Answer(
+            text="No relevant documentation was retrieved for this question.", cited=False
+        )
 
     response = httpx.post(
         f"{llm.base_url}/chat/completions",
@@ -80,4 +91,5 @@ def generate(question: str, chunks: list[Chunk], llm: LLMConfig) -> Answer:
     )
     response.raise_for_status()
     answer_text = response.json()["choices"][0]["message"]["content"]
-    return Answer(text=answer_text, sources=cited_sources(answer_text, chunks))
+    sources, cited = cited_sources(answer_text, chunks)
+    return Answer(text=answer_text, sources=sources, cited=cited)

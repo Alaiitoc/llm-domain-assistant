@@ -35,7 +35,7 @@ Shipped and verified end-to-end: `make ask` retrieves over the vector index and 
 
 | Measurement | Value |
 |---|---|
-| Corpus | 384 Terraform docs pages (v1.16.x MDX from `hashicorp/web-unified-docs` — the source that renders developer.hashicorp.com) |
+| Corpus | 384 pages of Terraform docs (v1.16.x MDX from `hashicorp/web-unified-docs` — the source that renders developer.hashicorp.com) |
 | Chunks | 2,715 — avg 819 chars (target 800, overlap 100), fenced code blocks atomic |
 | Index | Qdrant `terraform_docs` — 2,715 points, 1024-dim `mistral-embed`, cosine |
 | Retrieval latency | ~1s (query embedding API + Qdrant search) |
@@ -45,12 +45,12 @@ Shipped and verified end-to-end: `make ask` retrieves over the vector index and 
 
 **Measured on**: Intel i5-7300HQ (4 cores @ 2.50-3.50 GHz), 16 GB RAM, 2017-era laptop. GPU: GTX 1050 Ti (4 GB, Pascal) — present but unused; the 4 GB VRAM can't hold the ~5 GB q4 model regardless, so treat all generation latencies above as **CPU floor values**. The same answers on any modern GPU are seconds; the deterministic retrieval metrics above are hardware-independent (one API call + one Qdrant query).
 
-Observed behavior worth keeping:
+Observed behavior worth noting:
 
 - **Grounded refusal works.** Asked about something absent from the corpus ("What is the Spark API?"), the assistant states the context doesn't contain the answer instead of guessing — at similarity scores ~0.06 below every in-domain band observed so far.
-- **That score gap is a future cheap guard** (query below threshold → skip generation, answer "not in the docs" instantly). The threshold gets set from golden-set score distributions in Phase 2 — measured, not guessed.
+- **That score gap is a cheap future guard** (query below threshold → skip generation, answer "not in the docs" instantly). The threshold gets set from golden-set score distributions in Phase 2 — measured, not guessed.
 
-CPU-only inference is a deliberate constraint, not an accident: this laptop has no usable GPU, generation rents one, the deterministic retrieval metrics run anywhere. Dependencies follow that split (see Evaluation methodology).
+CPU-only inference is a deliberate constraint, not an accident: this laptop has no usable GPU: generation runs locally on CPU, training will rent one, and the deterministic retrieval metrics run anywhere. Dependencies follow that split (see `pyproject.toml` — the QLoRA stack is an optional dependency group).
 
 ## Results
 
@@ -61,7 +61,7 @@ CPU-only inference is a deliberate constraint, not an accident: this laptop has 
 | Faithfulness (judge) | TBD | TBD |
 | Answer relevance (judge) | TBD | TBD |
 
-**Takeaway**: TBD — one honest paragraph. *"The adapter improved X by Y points on Z; it degraded W, which I attribute to [reasoning]. Training loss alone was not enough to decide — the eval harness was."*
+**Takeaway**: TBD — written when the comparison runs, whatever the numbers say.
 
 ## Quickstart
 
@@ -124,12 +124,12 @@ src/
 ## What I learned
 
 - **Guessing loses to measuring.** Generation timeout, answer-length cap, and the future out-of-domain guard (in-corpus queries score 0.83+, out-of-corpus 0.74-0.77) all came from probe runs, not defaults — one timed request and two queries replaced a page of estimation.
-- **Real data finds what tests can't.** Two silent chunking bugs (an MDX component variant my regex didn't allow; overlap prepending mid-code text because blank lines inside code fences defeat naive `\n\n` splitting) survived 100+ unit tests and were both caught by eyeballing one real doc file. Corpus first, then code.
+- **Real data finds what tests can't.** Two silent chunking bugs (an MDX component variant my regex didn't allow; overlap prepending mid-code text because blank lines inside code fences defeat naive `\n\n` splitting) survived 100+ unit tests and were both caught by reading one real document manually. Corpus first, then code.
 
 *(Grows per phase: chunking decisions that mattered, where the fine-tune helped vs didn't, eval-set pitfalls, what I'd do differently.)*
 
 ## Links
 
-- LoRA adapter on Hugging Face — *planned, Phase 3* (published when training is done; the link goes here the day it exists)
-- Eval scorecard artifact — *planned, Phase 2* (uploaded by the CI `eval-gate` job once the golden set lands)
+- LoRA adapter on Hugging Face — *planned, Phase 3* (published when training is done; the link is added here once published)
+- Eval scorecard artifact — *planned, Phase 2* (uploaded by the CI `eval-gate` job once the golden set is committed)
 - Process notes / write-up — *planned, Phase 4*
